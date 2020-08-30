@@ -44,6 +44,7 @@ const pipe_some = (...fns) => (x) => {
       throw e;
     }
   }
+  return x;
 };
 
 export {create, get, pipe, pipe_some};
