@@ -47,4 +47,16 @@ const pipe_some = (...fns) => (x) => {
   return x;
 };
 
-export {create, get, pipe, pipe_some};
+let chunk = (arr, chunk_size = 2) => {
+  let chunked = [];
+  for (let i = 0; i < arr.length; i += chunk_size) {
+    let chunk = [];
+    for (let j = 0; j < chunk_size; j++) {
+      chunk.push(arr[i+j]);
+    }
+    chunked.push(chunk);
+  }
+  return chunked;
+};
+
+export {create, get, pipe, pipe_some, chunk};
