@@ -1,6 +1,6 @@
 import * as t from './types.js';
-import {Env} from './env.js';
-import {get, chunk} from './util.js';
+import {Env, base} from './env.js';
+import {get, chunk, interleave, last} from './util.js';
 
 let evaluate = (ast, env) => {
   if (ast.length === 0) return undefined;
@@ -23,11 +23,12 @@ let inner_eval = (value, env) => {
     case t.PList[t.type]: {
       if (value.value.length === 0) return value;
       let [first, ...rest] = value.value;
-      let fn = inner_eval(first, env);
-      switch(fn.name) {
+      switch(first.value) {
         case 'let*': return eval_let(rest, env);
         case 'def!': return eval_def(rest, env);
+        case 'fn*': return eval_fn(rest, env);
         default: {
+          let fn = inner_eval(first, env);
           let args = rest.map(v => inner_eval(v, env));
           return fn(...args);
         };
@@ -49,15 +50,15 @@ let eval_let = ([raw_bindings, ...exprs], env) => {
     throw Error('let* bindings must have an even number of entries.');
   let bindings = chunk(raw_bindings);
   let let_env = Env.create(env, {});
-  for (let [raw_name, raw_value] of bindings) {
-    if (raw_name[t.type] !== t.PName[t.type])
+  for (let [name, value] of bindings) {
+    if (name[t.type] !== t.PName[t.type])
       throw Error(`I can only bind values to valid names.`);
-    let name = raw_name.value;
-    let value = inner_eval(raw_value, let_env);
+    name = name.value;
+    value = inner_eval(value, let_env);
     Env.set(let_env, name, value);
   }
   let evaled = exprs.map((expr) => inner_eval(expr, let_env));
-  return evaled[evaled.length - 1];
+  return last(evaled);
 };
 
 let eval_def = ([name, expr], env) => {
@@ -68,6 +69,27 @@ let eval_def = ([name, expr], env) => {
   return value;
 };
 
+let eval_fn = ([raw_params, ...exprs], env) => {
+  if (raw_params[t.type] !== t.PList[t.type])
+    throw Error(`Parameters must be a list`);
+  raw_params = raw_params.value;
+  if (!raw_params.every(p => p[t.type] === t.PName[t.type]))
+    throw Error(`Parameters must all be names`);
+  let params = raw_params.map(n => n.value);
+  let fn = (...args) => {
+    if (args.length !== raw_params.length)
+      throw Error(`Arity mismatch: expected ${params.length}; received ${args.length}.`);
+    let bindings = chunk(interleave(params, args));
+    let fn_env = Env.create(env, {});
+    for (let [name, value] of bindings) {
+      Env.set(fn_env, name, value);
+    }
+    let evaled = exprs.map(expr => inner_eval(expr, fn_env));
+    return last(evaled);
+  };
+  return fn;
+};
+
 let lift = (value) => {
   if (value == null) return t.PNil;
   if (value[t.type]) return value;
@@ -75,7 +97,12 @@ let lift = (value) => {
     case 'number': return t.PNumber.create(value);
     case 'boolean': return t.PBoolean.create(value);
     case 'string': return t.PString.create(value);
+    case 'function': return t.PFunction.create(value);
   }
 };
 
 export {evaluate, lift};
+
+import * as r from './reader.js';
+
+evaluate(r.read('(def! id (fn* (a) a)) (id 42'), base) //?
