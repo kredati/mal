@@ -59,4 +59,15 @@ let chunk = (arr, chunk_size = 2) => {
   return chunked;
 };
 
-export {create, get, pipe, pipe_some, chunk};
+let interleave = (...arrs) => {
+  let interleaved = [];
+  let shortest = Math.min(...arrs.map(get('length')));
+  for (let i = 0; i < shortest; i++) {
+    for (let arr of arrs) { interleaved.push(arr[i]); }
+  }
+  return interleaved;
+};
+
+let last = (arr) => arr[arr.length - 1];
+
+export {create, get, pipe, pipe_some, chunk, interleave, last};
