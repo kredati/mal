@@ -45,4 +45,10 @@ let PError = {
   show () { return this.value; }
 };
 
-export {type, PNil, PBoolean, PNumber, PString, PName, PList, PError};
+let PFunction = {
+  [type]: Symbol('paidia/function'),
+  create: (value, name = 'function') => create(PFunction, {value, name}),
+  show () { return `#<${this.name}>`}
+};
+
+export {type, PNil, PBoolean, PNumber, PString, PName, PList, PError, PFunction};
