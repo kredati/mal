@@ -1,5 +1,5 @@
 import {create} from './util.js';
-import {PNumber, PBoolean, PNil, PName, PList, PString, type} from './types.js';
+import {PNumber, PBoolean, PNil, PName, PList, PError, PString, type} from './types.js';
 
 let Reader = {
   create: (tokens, position = 0, level = 0) => 
@@ -69,8 +69,7 @@ let read = (str) => {
   let [form, last_reader] = read_form(reader);
   last_reader.level //?
   if (last_reader.level !== 0) {
-    console.error('.*(EOF|end of input|unbalanced).*');
-    return [];
+    return PError.create('.*(EOF|end of input|unbalanced).*');
   }
   return form;
 };

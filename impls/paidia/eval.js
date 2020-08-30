@@ -6,9 +6,12 @@ import {get} from './util.js';
 let evaluate = (ast, env) => {
   ast
   if (ast.length === 0) return undefined;
-  return ast
+  try {  return ast
     .map(value => inner_eval(value, env))
     .map(lift);
+  } catch (e) {
+    return [t.PError.create(`.*${e.name}: ${e.message}.*`)];
+  }
 };
 
 let inner_eval = (value, env) => {
@@ -20,6 +23,7 @@ let inner_eval = (value, env) => {
       return lookup;
     }
     case t.PList[t.type]: {
+      if (value.value.length === 0) return value;
       let [fn, ...args] = value.value.map(v => inner_eval(v, env));
       return fn(...args);
     }
@@ -33,6 +37,7 @@ let inner_eval = (value, env) => {
 
 let lift = (value) => {
   if (value == null) return t.PNil;
+  if (value[t.type]) return value;
   switch (typeof value) {
     case 'number': return t.PNumber.create(value);
     case 'boolean': return t.PBoolean.create(value);

@@ -37,6 +37,12 @@ let PName = {
   [type]: Symbol('paidia/name'),
   create: (value) => create(PName, {value}),
   show () { return this.value; }
-}
+};
 
-export {type, PNil, PBoolean, PNumber, PString, PName, PList};
+let PError = {
+  [type]: Symbol('paidia/error'),
+  create: (value) => create(PError, {value}),
+  show () { return this.value; }
+};
+
+export {type, PNil, PBoolean, PNumber, PString, PName, PList, PError};
