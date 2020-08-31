@@ -67,9 +67,8 @@ let tokenize = (str) => {
 let read = (str) => {
   let reader = Reader.create(tokenize(str));
   let [form, last_reader] = read_form(reader);
-  last_reader.level //?
   if (last_reader.level !== 0) {
-    return PError.create('.*(EOF|end of input|unbalanced).*');
+    return [PError.create('.*(EOF|end of input|unbalanced).*')];
   }
   return form;
 };

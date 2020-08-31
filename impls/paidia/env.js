@@ -1,4 +1,4 @@
-import {get, create} from './util.js';
+import {create} from './util.js';
 import {type} from './types.js';
 
 let Env = {
@@ -9,7 +9,8 @@ let Env = {
     env[key] = value;
     return env;
   },
-  get: (key) => get(key, this),
+  get (key) { return this[key] },
+  has (key) { return key in this }
 };
 
 let base = Env.create(Env.empty(), {
@@ -17,8 +18,6 @@ let base = Env.create(Env.empty(), {
   '-': (x, y) => x - y,
   '*': (x, y) => x * y,
   '/': (x, y) => y === 0 ? undefined : Math.round(x/y),
-  'def!' (name, value) { Env.set(this, name, value); return value; },
-  'let*' (bindings) { return Env.create(this, bindings); }
 });
 
 export {Env, base};

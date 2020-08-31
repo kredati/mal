@@ -1,7 +1,7 @@
 import * as reader from './reader.js';
 import * as printer from './printer.js';
 import * as evaluate from './eval.js';
-import {base} from './env.js'
+import {core} from './core.js';
 import {pipe_some} from './util.js';
 
 let stdin = Deno.iter(Deno.stdin);
@@ -24,7 +24,7 @@ let prompt = () => {
 let loop = pipe_some(
   read_line,
   reader.read,
-  (ast) => evaluate.evaluate(ast, base),
+  (ast) => evaluate.evaluate(ast, core),
   printer.print,
   print_out
 );
